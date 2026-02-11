@@ -4,3 +4,4 @@ psycopg2-binary==2.9.9
 python-dotenv==1.0.0 # if you use .env for DB URL
 requests==2.32.0 # for Coinbase API
 pyspark==3.5.0
+anthropic

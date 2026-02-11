@@ -1,10 +1,12 @@
+Each file includes many comments mainly for my own understanding. Goal was to learn how to implement a full data pipeline as close to a real world example as possible locally.
+
 Prereqs:
+
 Postgres (psql/PGAdmin) ready to go (locally)
-Requirements.txt
 S3 Bucket in AWS setup and ready to go
 Fill in .env file with your credentials
 
-To run:
+Note:
 each script is its own flask app.
 
 1) Run create_tables.py -> this will create a empty market_candle table in Postgres (locally), this will be populated with candles you query
@@ -28,25 +30,13 @@ This is designed to upload to s3, so you will need to get setup on AWS.
 
 1) Go to AWS S3 Console and click 'Create Bucket'
 2) Name it whatever you want, you use that name in .env. The S3 path should go into the .env file.
-3) Region us-east-1
 
-Then you will need to setup your access with 'aws configure' command in terminal. Enter your access key and secret access key.
-If you dont have those credentials, you will need to go into AWS Console -> IAM -> Users -> Create User. (IAM manages access to AWS resources.)
-Give the user a name and attach the policy 'AmazonS3FullAccess' 
-Now Create the access key (command line cli) by clicking on the created user.
-Now do AWS Configure and input your credentials. 
-
-spark-submit   --jars $(echo ~/spark-jars/*.jar | tr ' ' ',')   spark/jobs/process_candles.py
-
-
-export PYTHONPATH="/home/damian/StockAnalytics:$PYTHONPATH"
-echo $PYTHONPATH
-
-
-spark-submit   --packages org.apache.hadoop:hadoop-aws:3.3.4,com.amazonaws:aws-java-sdk-bundle:1.12.569   spark/jobs/compute_metrics.py
-
-need to use 3.3.4 jar
 
 
 next steps: ensure idempotency on metrics, and metrics on existing data, new data only
 fix issue where postgres locally doesnt enforce timestamp offset for process_candles
+
+Some ideas:
+
+1) Do anomoly detection. As metrics are computed, flag high volatility. If volatility is x amount greater than average, flag it via spark and then claude can read and interpret the data.
+With spark streaming, this would require a Claude API call every batch computation.

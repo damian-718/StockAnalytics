@@ -42,5 +42,26 @@ services: # services refer to the scripts than run from docker-compose run. dock
         spark-submit \
           --packages org.apache.hadoop:hadoop-aws:3.3.4,com.amazonaws:aws-java-sdk-bundle:1.12.569,org.postgresql:postgresql:42.7.1 \
           spark/jobs/process_candles.py
+          
+  generate-report:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.spark
+    volumes:
+      - ../spark:/app/spark
+      - ../.env:/app/.env
+    env_file:
+      - ../.env
+    environment:
+      - SPARK_PACKAGES=org.apache.hadoop:hadoop-aws:3.3.4,com.amazonaws:aws-java-sdk-bundle:1.12.569
+      - PYTHONPATH=/app
+    entrypoint: []
+    command: 
+      - /bin/bash
+      - -c
+      - |
+        spark-submit \
+          --packages org.apache.hadoop:hadoop-aws:3.3.4,com.amazonaws:aws-java-sdk-bundle:1.12.569 \
+          spark/jobs/generate_report.py
 
 # docker compose is the instructions on how to run the continer. docker compose build will look here and build the container. this points to dockerfile.

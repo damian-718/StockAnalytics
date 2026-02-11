@@ -1,6 +1,14 @@
 from app.models.candle import Candle
 
 def get_candles(symbol, interval):
+    
+    # SELECT *
+    # FROM candle
+    # WHERE symbol = :symbol
+    # AND interval = :interval
+    # ORDER BY timestamp DESC
+    # LIMIT 500;
+
     candles = (
         Candle.query # this does not query a table, rather the table is created already. this is sqlAlchaemy interface to query the candle table which is defined inside candle model.
         .filter_by(symbol=symbol, interval=interval)
@@ -9,6 +17,7 @@ def get_candles(symbol, interval):
         .all()
     )
 
+    
     # convert to list of dicts for JSON
     return [
         {

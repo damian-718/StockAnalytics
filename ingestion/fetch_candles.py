@@ -17,7 +17,7 @@ def fetch_candles(symbol: str, interval: str):
     raw_candles = get_candles_raw(symbol, granularity)
 
     candles = []
-    for row in raw_candles:
+    for row in raw_candles: # the raw candles are just numbers in row/col format like: row = [1677628800, 98.5, 101.2, 99.1, 100.3, 1250]. this will assign labels for each column based on the model. each append is a candle object which is converted to a database row by sqlalchemy.
         candles.append( # appends rows to the table defined inside of candle. sqlalchemy provides this.
             Candle(
                 symbol=symbol,

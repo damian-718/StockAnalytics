@@ -70,7 +70,7 @@ def run():
         # --- TREND SIGNAL (simple example) ---
         .withColumn(
             "trend_signal",
-            F.when(F.col("ma_5") > F.col("ma_15"), 1)
+            F.when(F.col("ma_5") > F.col("ma_15"), 1) # when 5 minute MA is higher than a longer timeframe, it means bullish
              .when(F.col("ma_5") < F.col("ma_15"), -1)
              .otherwise(0)
         )
