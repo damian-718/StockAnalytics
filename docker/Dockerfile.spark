@@ -1,0 +1,31 @@
+FROM apache/spark:3.5.0-python3
+
+USER root
+
+# Copy from parent directory
+# copy requirements.txt from root into /app/requirements.txt in container
+COPY ../requirements.txt /app/requirements.txt 
+RUN pip install --no-cache-dir -r /app/requirements.txt
+
+# Copy spark folder and .env from parent
+COPY ../spark/ /app/spark/ 
+COPY ../.env /app/.env
+
+# Create Ivy cache directory with proper permissions
+RUN mkdir -p /home/spark/.ivy2 && \
+    chown -R spark:spark /home/spark/.ivy2
+
+WORKDIR /app
+
+# Set Spark packages as environment variable
+ENV SPARK_PACKAGES="org.apache.hadoop:hadoop-aws:3.3.4,com.amazonaws:aws-java-sdk-bundle:1.12.569"
+
+USER spark
+
+# dockerfile is the recipe for building the container. 
+# 1) start with prebuilt container that has spark+python installed. 
+# 2) switch to root user to allow installation of packages.
+# 3) install python packages from requirements.txt
+# 4) copy code into the container via COPY
+# 5) create folders spark needs
+# 6) switch back from root user
