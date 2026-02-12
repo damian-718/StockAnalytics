@@ -37,10 +37,10 @@ Notes:
 
 There is a run.py file which will spin up a flask backend which can query the docker postgres database. 
 
-each script is its own flask app.
+Each script is its own flask app.
 
-When spark job runs, it will search through the spark_job_offsets table. Each job has a row. For example, we have have process_candles.py and compute_metrics.py, each a job. Each job gets a corresponding row in the postgres DB table. The 2 columns would be [job_name, last_processed_ts]. So everytime we run process_candles.py, it will go into the table, look for the row where job_name=process_candles, check the ts and update it.
-Keep in mind, it will first validate if the ts was already processed, by checking if rows in the market_candles table have ts > last_processed_ts. If so, the latest_processed_ts in the offsets table gets updated.
+When a spark job runs, it will search through the spark_job_offsets table. Each job has a row. For example, we have have process_candles.py and compute_metrics.py, each a job. Each job gets a corresponding row in the postgres DB table. The 2 columns would be [job_name, last_processed_ts]. So everytime we run process_candles.py, it will go into the table, look for the row where job_name=process_candles, check the timestamp and update it.
+Keep in mind, it will first validate if the timestamp was already processed, by checking if rows in the market_candles table have timestamps > last_processed_ts. If so, the latest_processed_ts in the offsets table gets updated to the new jobs timestamp.
 
 Next Steps: 
 
