@@ -12,28 +12,26 @@ Prereqs:
 
 How to run:
 
-1) Run create_tables.py and create_spark_tables.py
-    - this will create a empty market_candle table in Postgres, this will be populated with candles you query
-    then run create_spark_tables.py -> this is a table for spark. It is used to track offset (last timestamp processed) to avoid duplicate jobs and only transfer new data to S3 from Postgres.
-
-2) Build and run application
+1) Build and run application
     1) cd docker
     2) docker-compose build
     3) docker-compose up -d postgres
-    4) docker-compose run -rm ingest-candles
+    4) docker-compose run --rm init-db
+    5) docker-compose run --rm ingest-candles
 
-3) Now postgres inside docker should have candle data. Services available:
+2) Now postgres inside docker should have candle data. Services available:
     - 'ingest-candles' - Fetch data from Coinbase API
     - 'process-candles' - Transform raw data with Spark into S3 (will be extending functionality for validity and cleaning)
     - 'compute-metrics' - Calculate technical indicators, upload to S3
     - 'generate-report' - AI-powered market summary
     - 'postgres' - Database storage
+    - 'init-db' - One time command needed on first run to initialize tables in Postgres
 
-4) To run services, simply do docker-compose run --rm 'service-name'. Note: -- rm indicates one-off task. Container is no longer needed once task is done so its shut off.
+3) To run services, simply do docker-compose run --rm 'service-name'. Note: -- rm indicates one-off task. Container is no longer needed once task is done so its shut off.
 
 Notes:
 
-currently api call is made to coinbase, data is ingested via cron job every minute (variable up to you)and uploaded to postgres. spark for ingestion is overkill. but then every hour or so, spark will send data (batch job) from postgres to s3.
+goal is an api call is made to coinbase, data is ingested via cron job every minute (variable up to you)and uploaded to postgres. spark for ingestion is overkill. but then every hour or so, spark will send data (batch job) from postgres to s3.
 batch job will grab 1m, 5m,15m, and 1 hr candles and group accordingly.
 
 each script is its own flask app.
@@ -41,11 +39,10 @@ each script is its own flask app.
 When spark job runs, it will search through the spark_job_offsets table. Each job has a row. For example, we have have process_candles.py and compute_metrics.py, each a job. Each job gets a corresponding row in the postgres DB table. The 2 columns would be [job_name, last_processed_ts]. So everytime we run process_candles.py, it will go into the table, look for the row where job_name=process_candles, check the ts and update it.
 Keep in mind, it will first validate if the ts was already processed, by checking if rows in the market_candles table have ts > last_processed_ts. If so, the latest_processed_ts in the offsets table gets updated.
 
-
 Next Steps: 
 
 ensure idempotency on metrics, and metrics on existing data, new data only
-fix issue where postgres locally doesnt enforce timestamp offset for process_candles
+fix issue where postgres doesnt enforce timestamp offset for process_candles
 
 Some ideas:
 

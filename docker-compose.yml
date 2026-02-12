@@ -78,6 +78,25 @@ services: # services refer to the scripts than run from docker-compose run. dock
       - postgres  # depends on postgres so postgres will spin up first in its own container
     command: python ingestion/scheduler.py
 
+
+  init-db:  # for table initilization for postgres to populate into
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.flask
+    volumes:
+      - ./app:/app/app
+      - ./ingestion:/app/ingestion
+      - ./.env:/app/.env
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+    command: >
+      sh -c "
+        python create_tables.py &&
+        python create_spark_tables.py
+      "
+
   # spins up docker container for postgres. users wont need to download postgres manually now.
   postgres:
     image: postgres:15 # docker hub has application images that can be downloaded and used in a container
@@ -93,6 +112,8 @@ services: # services refer to the scripts than run from docker-compose run. dock
       - postgres_data:/var/lib/postgresql/data # persist data between container restarts
 
 volumes:
-  postgres_data: # named volume to store postgres data permanently
+  postgres_data: # named volume to store postgres data permanently. similar to a kubernetes pod volume. if container goes down, data is safely stored/persisted.
 
 # docker compose is the instructions on how to run the container. docker compose build will look here and build the container. this points to dockerfile.
+# docker compose can manage many container builds. tells it which dockerfile to use, what volume to link, and how to start it.
+# dockerfile builds container, docker compose tells it how to run, along with volumes etc..
