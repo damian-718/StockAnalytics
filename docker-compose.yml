@@ -56,7 +56,7 @@ services: # services refer to the scripts than run from docker-compose run. dock
       - SPARK_PACKAGES=org.apache.hadoop:hadoop-aws:3.3.4,com.amazonaws:aws-java-sdk-bundle:1.12.569
       - PYTHONPATH=/app
     entrypoint: []
-    command: 
+    command:  # spark-submit --packages will download maven packages into the docker container
       - /bin/bash
       - -c
       - |
@@ -111,9 +111,79 @@ services: # services refer to the scripts than run from docker-compose run. dock
     volumes:
       - postgres_data:/var/lib/postgresql/data # persist data between container restarts
 
+ # Airflow Services
+  airflow-init:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.airflow
+    env_file:
+      - .env
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://${DB_USER}:${DB_PASSWORD}@postgres/airflow
+      - AIRFLOW__CORE__FERNET_KEY=your-fernet-key-here-generate-one
+      - AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION=true
+      - AIRFLOW__CORE__LOAD_EXAMPLES=false
+      - _AIRFLOW_DB_MIGRATE=true
+      - _AIRFLOW_WWW_USER_CREATE=true
+      - _AIRFLOW_WWW_USER_USERNAME=admin
+      - _AIRFLOW_WWW_USER_PASSWORD=admin
+    depends_on:
+      - postgres
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - /var/run/docker.sock:/var/run/docker.sock  # Access Docker from Airflow
+    command: version
+
+  airflow-webserver:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.airflow
+    env_file:
+      - .env
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://${DB_USER}:${DB_PASSWORD}@postgres/airflow
+      - AIRFLOW__CORE__FERNET_KEY=K2v2ul45oI2Hb46rHBgmEW39d4REZZForrIDoCv8rAg=
+      - AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION=true
+      - AIRFLOW__CORE__LOAD_EXAMPLES=false
+    depends_on:
+      - postgres
+      - airflow-init
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "8080:8080"
+    command: webserver
+
+  airflow-scheduler:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.airflow
+    env_file:
+      - .env
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://${DB_USER}:${DB_PASSWORD}@postgres/airflow
+      - AIRFLOW__CORE__FERNET_KEY=your-fernet-key-here-generate-one
+      - AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION=true
+      - AIRFLOW__CORE__LOAD_EXAMPLES=false
+    depends_on:
+      - postgres
+      - airflow-init
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: scheduler
+
 volumes:
   postgres_data: # named volume to store postgres data permanently. similar to a kubernetes pod volume. if container goes down, data is safely stored/persisted.
 
-# docker compose is the instructions on how to run the container. docker compose build will look here and build the container. this points to dockerfile.
-# docker compose can manage many container builds. tells it which dockerfile to use, what volume to link, and how to start it.
-# dockerfile builds container, docker compose tells it how to run, along with volumes etc..
+
+  # docker compose is the instructions on how to run the container. docker compose build will look here and build the container. this points to dockerfile.
+  # docker compose can manage many container builds. tells it which dockerfile to use, what volume to link, and how to start it.
+  # dockerfile builds container, docker compose tells it how to run, along with volumes etc..

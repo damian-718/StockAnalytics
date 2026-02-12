@@ -29,10 +29,13 @@ How to run:
 
 3) To run services, simply do docker-compose run --rm 'service-name'. Note: -- rm indicates one-off task. Container is no longer needed once task is done so its shut off.
 
+Airflow Services:
+
+This project includes a airflow pipeline which runs: 'ingest_task >> process_task >> metrics_task >> report_task' every hour. This is still in the testing phase, doesnt always run and encounters the offset table bug I am working on fixing.
+
 Notes:
 
-goal is an api call is made to coinbase, data is ingested via cron job every minute (variable up to you)and uploaded to postgres. spark for ingestion is overkill. but then every hour or so, spark will send data (batch job) from postgres to s3.
-batch job will grab 1m, 5m,15m, and 1 hr candles and group accordingly.
+There is a run.py file which will spin up a flask backend which can query the docker postgres database. 
 
 each script is its own flask app.
 
