@@ -10,7 +10,7 @@ services: # services refer to the scripts than run from docker-compose run. dock
       - ./.env:/app/.env
     env_file:
       - .env # load environment variables from .env
-    environment:
+    environment: # these are variables injected on startup. ideal rather than setting them inside the image since we can change these variables in the .env and reinject.
       - SPARK_PACKAGES=org.apache.hadoop:hadoop-aws:3.3.4,com.amazonaws:aws-java-sdk-bundle:1.12.569
       - PYTHONPATH=/app # environment variables for paths like python
     entrypoint: []

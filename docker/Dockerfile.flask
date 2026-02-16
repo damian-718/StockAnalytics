@@ -13,7 +13,7 @@ COPY create_tables.py /app/
 COPY create_spark_tables.py /app/
 COPY .env /app/.env
 
-# Set environment variables
+# Set environment variables. these variables are baked into the image itself.
 ENV PYTHONUNBUFFERED=1
 ENV FLASK_APP=app
 
