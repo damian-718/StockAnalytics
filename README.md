@@ -1,5 +1,5 @@
 Each file includes many comments mainly for my own understanding. Goal was to learn how to implement a full data pipeline as close to a real world example as possible locally.
-Project is intergated with docker for setup ease. Will download postgres into a docker container, fetch candle data via Coinbase API calls and populate postgres. Then transfer data into S3, as well as AI analysis and computations.
+Project is integrated with docker for setup ease. Will download postgres into a docker container, fetch candle data via Coinbase API calls and populate postgres. Then transfer data into S3, as well as AI analysis and computations.
 
 Currently only supports BTC, more to come soon...
 
